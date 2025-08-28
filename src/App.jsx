@@ -13,6 +13,9 @@ function App() {
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
         <p>Hello Prakhar is here</p>
+        <p>Hello Prakhar is here</p>
+        <p>Hello Prakhar is here</p>
+        <p>Hello tushar is here</p>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
