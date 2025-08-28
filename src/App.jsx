@@ -17,6 +17,7 @@ function App() {
         <p>Hello Prakhar is here</p>
         <p>Hello tushar is here</p>
         <p>Prakhar cjaned on main</p>
+        <h1>jai mahakl ji </h1>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
