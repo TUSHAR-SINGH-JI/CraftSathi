@@ -5,7 +5,6 @@ import { useAuth } from '../../../context/authcontext'
 
 const Login = () => {
     const { userLoggedIn } = useAuth()
-
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isSigningIn, setIsSigningIn] = useState(false)
@@ -16,7 +15,7 @@ const Login = () => {
         if(!isSigningIn) {
             setIsSigningIn(true)
             await doSignInWithEmailAndPassword(email, password)
-            // doSendEmailVerification()
+            doSendEmailVerification()
         }
     }
 
