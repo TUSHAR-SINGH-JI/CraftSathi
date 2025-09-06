@@ -1,116 +1,188 @@
-import React, { useState } from 'react'
-import { Navigate, Link } from 'react-router-dom'
-import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../../firebase/auth'
-import { useAuth } from '../../../context/authcontext'
+import React, { useState } from 'react';
+import { Navigate, Link } from 'react-router-dom';
+import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../../firebase/auth';
+import { useAuth } from '../../../context/authcontext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFeatherPointed } from '@fortawesome/free-solid-svg-icons';
 
 const Login = () => {
-    const { userLoggedIn } = useAuth()
-
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [isSigningIn, setIsSigningIn] = useState(false)
-    const [errorMessage, setErrorMessage] = useState('')
+    const { userLoggedIn } = useAuth();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSigningIn, setIsSigningIn] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const onSubmit = async (e) => {
-        e.preventDefault()
-        if(!isSigningIn) {
-            setIsSigningIn(true)
-            await doSignInWithEmailAndPassword(email, password)
-            // doSendEmailVerification()
+        e.preventDefault();
+        if (!isSigningIn) {
+            setIsSigningIn(true);
+            try {
+                await doSignInWithEmailAndPassword(email, password);
+            } catch (error) {
+                setErrorMessage(error.message);
+                setIsSigningIn(false);
+            }
         }
-    }
+    };
 
     const onGoogleSignIn = (e) => {
-        e.preventDefault()
+        e.preventDefault();
         if (!isSigningIn) {
-            setIsSigningIn(true)
+            setIsSigningIn(true);
             doSignInWithGoogle().catch(err => {
-                setIsSigningIn(false)
-            })
+                setErrorMessage(err.message);
+                setIsSigningIn(false);
+            });
         }
-    }
+    };
 
     return (
-        <div>
-            {userLoggedIn && (<Navigate to={'/home'} replace={true} />)}
-
-            <main className="w-full h-screen flex self-center place-content-center place-items-center">
-                <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl">
-                    <div className="text-center">
-                        <div className="mt-2">
-                            <h3 className="text-gray-800 text-xl font-semibold sm:text-2xl">Welcome Back</h3>
-                        </div>
+        <div className='min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-900 via-black to-black text-white font-sans p-4'>
+            <div className="w-full max-w-xs p-6 space-y-4 bg-white rounded-xl shadow-lg transform transition-all duration-300 hover:shadow-xl mx-auto">
+                <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                        <FontAwesomeIcon 
+                            icon={faFeatherPointed} 
+                            className="text-blue-600 text-3xl animate-bounce"
+                            flip
+                        />
                     </div>
-                    <form
-                        onSubmit={onSubmit}
-                        className="space-y-5"
-                    >
+                    <h2 className="mt-4 text-2xl font-bold text-gray-900 animate-fade-in">
+                        Welcome back
+                    </h2>
+                    <p className="mt-1 text-xs text-gray-600">
+                        Sign in to your account
+                    </p>
+                </div>
+                {userLoggedIn && (<Navigate to={'/home'} replace={true} />)}
+                <form className="mt-4 space-y-3" onSubmit={onSubmit}>
+                    {errorMessage && (
+                        <div className="rounded-md bg-red-50 p-2 text-xs">
+                            <div className="text-red-700">{errorMessage}</div>
+                        </div>
+                    )}
+                    <div className="space-y-2">
                         <div>
-                            <label className="text-sm text-gray-600 font-bold">
+                            <label htmlFor="email-address" className="block text-xs font-medium text-gray-700 mb-1">
                                 Email
                             </label>
                             <input
+                                id="email-address"
+                                name="email"
                                 type="email"
-                                autoComplete='email'
+                                autoComplete="email"
                                 required
-                                value={email} onChange={(e) => { setEmail(e.target.value) }}
-                                className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg transition duration-300"
+                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-xs"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
-
-
                         <div>
-                            <label className="text-sm text-gray-600 font-bold">
+                            <label htmlFor="password" className="block text-xs font-medium text-gray-700 mb-1">
                                 Password
                             </label>
                             <input
+                                id="password"
+                                name="password"
                                 type="password"
-                                autoComplete='current-password'
+                                autoComplete="current-password"
                                 required
-                                value={password} onChange={(e) => { setPassword(e.target.value) }}
-                                className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg transition duration-300"
+                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-xs"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
+                    </div>
 
-                        {errorMessage && (
-                            <span className='text-red-600 font-bold'>{errorMessage}</span>
-                        )}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <input
+                                id="remember-me"
+                                name="remember-me"
+                                type="checkbox"
+                                className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="remember-me" className="ml-1 block text-xs text-gray-900">
+                                Remember me
+                            </label>
+                        </div>
 
+                        <div className="text-xs">
+                            <a href="#" className="text-blue-600 hover:text-blue-500">
+                                Forgot password?
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
                         <button
                             type="submit"
                             disabled={isSigningIn}
-                            className={`w-full px-4 py-2 text-white font-medium rounded-lg ${isSigningIn ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'}`}
+                            className="group relative w-full flex justify-center py-2 px-3 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 transition-colors duration-200 shadow"
                         >
-                            {isSigningIn ? 'Signing In...' : 'Sign In'}
+                            {isSigningIn ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-1 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Signing in...
+                                </span>
+                            ) : 'Login'}
                         </button>
-                    </form>
-                    <p className="text-center text-sm">Don't have an account? <Link to={'/register'} className="hover:underline font-bold">Sign up</Link></p>
-                    <div className='flex flex-row text-center w-full'>
-                        <div className='border-b-2 mb-2.5 mr-2 w-full'></div><div className='text-sm font-bold w-fit'>OR</div><div className='border-b-2 mb-2.5 ml-2 w-full'></div>
                     </div>
-                    <button
-                        disabled={isSigningIn}
-                        onClick={(e) => { onGoogleSignIn(e) }}
-                        className={`w-full flex items-center justify-center gap-x-3 py-2.5 border rounded-lg text-sm font-medium  ${isSigningIn ? 'cursor-not-allowed' : 'hover:bg-gray-100 transition duration-300 active:bg-gray-100'}`}>
-                        <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clipPath="url(#clip0_17_40)">
-                                <path d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z" fill="#4285F4" />
-                                <path d="M24.48 48.0016C30.9529 48.0016 36.4116 45.8764 40.3888 42.2078L32.6549 36.2111C30.5031 37.675 27.7252 38.5039 24.4888 38.5039C18.2275 38.5039 12.9187 34.2798 11.0139 28.6006H3.03296V34.7825C7.10718 42.8868 15.4056 48.0016 24.48 48.0016Z" fill="#34A853" />
-                                <path d="M11.0051 28.6006C9.99973 25.6199 9.99973 22.3922 11.0051 19.4115V13.2296H3.03298C-0.371021 20.0112 -0.371021 28.0009 3.03298 34.7825L11.0051 28.6006Z" fill="#FBBC04" />
-                                <path d="M24.48 9.49932C27.9016 9.44641 31.2086 10.7339 33.6866 13.0973L40.5387 6.24523C36.2 2.17101 30.4414 -0.068932 24.48 0.00161733C15.4055 0.00161733 7.10718 5.11644 3.03296 13.2296L11.005 19.4115C12.901 13.7235 18.2187 9.49932 24.48 9.49932Z" fill="#EA4335" />
-                            </g>
-                            <defs>
-                                <clipPath id="clip0_17_40">
-                                    <rect width="48" height="48" fill="white" />
-                                </clipPath>
-                            </defs>
-                        </svg>
-                        {isSigningIn ? 'Signing In...' : 'Continue with Google'}
-                    </button>
+                    
+                    <div className="mt-3">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300" />
+                            </div>
+                            <div className="relative flex justify-center text-xs">
+                                <span className="px-1 bg-gray-50 text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+                        <div className="mt-3">
+                            <button
+                                onClick={onGoogleSignIn}
+                                disabled={isSigningIn}
+                                className="w-full inline-flex justify-center items-center py-2 px-3 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-gray-500 transition-colors duration-200"
+                            >
+                                <svg className="w-4 h-4 mr-1" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g clipPath="url(#clip0_17_40)">
+                                        <path d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z" fill="#4285F4" />
+                                        <path d="M24.48 48.0016C30.9529 48.0016 36.4116 45.8764 40.3888 42.2078L32.6549 36.2111C30.5031 37.675 27.7252 38.5039 24.4888 38.5039C18.2275 38.5039 12.9187 34.2798 11.0139 28.6006H3.03296V34.7825C7.10718 42.8868 15.4056 48.0016 24.48 48.0016Z" fill="#34A853" />
+                                        <path d="M11.0051 28.6006C9.99973 25.6199 9.99973 22.3922 11.0051 19.4115V13.2296H3.03298C-0.371021 20.0112 -0.371021 28.0009 3.03298 34.7825L11.0051 28.6006Z" fill="#FBBC04" />
+                                        <path d="M24.48 9.49932C27.9016 9.44641 31.2086 10.7339 33.6866 13.0973L40.5387 6.24523C36.2 2.17101 30.4414 -0.068932 24.48 0.00161733C15.4055 0.00161733 7.10718 5.11644 3.03296 13.2296L11.005 19.4115C12.901 13.7235 18.2187 9.49932 24.48 9.49932Z" fill="#EA4335" />
+                                    </g>
+                                    <defs>
+                                        <clipPath id="clip0_17_40">
+                                            <rect width="48" height="48" fill="white" />
+                                        </clipPath>
+                                    </defs>
+                                </svg>
+                                Continue with Google
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="text-center mt-3">
+                        <div className="text-xs text-gray-600">
+                            Not a member?{' '}
+                            <Link to="/register" className="text-blue-600 hover:text-blue-500">
+                                Create an account
+                            </Link>
+                        </div>
+                    </div>
+                </form>
+                
+                <div className="text-center mt-4">
+                    <p className="text-xs text-gray-500">© 2023 Your Company. All rights reserved.</p>
                 </div>
-            </main>
+            </div>
         </div>
-    )
-}
+    );
+};
 
 export default Login;
