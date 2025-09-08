@@ -19,3 +19,7 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"Hello": "World scmposcocopmd"}
+
+@app.get("/register")
+async def login():
+    print("Logged in..")
