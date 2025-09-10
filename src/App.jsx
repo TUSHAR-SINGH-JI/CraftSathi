@@ -7,6 +7,8 @@ import Home from "../src/component/home";
 import { AuthProvider } from "../src/context/authcontext";
 import { useRoutes } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import axios from 'axios';
+axios.defaults.baseURL="https://localhost:8000"
 function App() {
   return (
     <Router>

@@ -4,6 +4,7 @@ import Header from '../header/Header'
 import { motion } from 'framer-motion'
 import { useSpring, animated } from 'react-spring'
 
+
 const Home = () => {
     const { currentUser } = useAuth()
 

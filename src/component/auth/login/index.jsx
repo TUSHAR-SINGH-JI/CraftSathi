@@ -4,6 +4,7 @@ import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../../fireb
 import { useAuth } from '../../../context/authcontext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFeatherPointed } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
 const Login = () => {
     const { userLoggedIn } = useAuth();
