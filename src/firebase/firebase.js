@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore"; // Added Firestore import
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAZf7eWa-MIFqJb7oXP5IQjLMBWQYYe8eo",
-  authDomain: "craft-sarthi.firebaseapp.com",
-  projectId: "craft-sarthi",
-  storageBucket: "craft-sarthi.firebasestorage.app",
-  messagingSenderId: "143124835877",
-  appId: "1:143124835877:web:3ea443cf2060ace678d9cc"
+  apiKey: process.env.apikey,
+  authDomain: process.env.authDomain,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId
 };
 
 // Initialize Firebase
