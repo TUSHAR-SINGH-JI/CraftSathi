@@ -1,80 +1,126 @@
-from fastapi import FastAPI,Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from pymongo import MongoClient
 import os
+import requests
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
+from pymongo import MongoClient
 import firebase_admin
-from firebase_admin import credentials,auth
-from pydantic import BaseModel
+from firebase_admin import credentials, auth
 
+# --- Configuration & Initialization ---
 load_dotenv()
-app=FastAPI()
-templates = Jinja2Templates(directory="templates")
+app = FastAPI()
+conn=MongoClient(os.getenv("MONGO_URI"))
+db=conn.get_database("CraftSathi") 
+user_col = db.get_collection('users')
 
-# Create a dictionary with all the required Firebase credentials.
-firebase_credentials = {
-  "type": os.getenv("type"),
-  "project_id": os.getenv("project_id"),
-  "private_key_id": os.getenv("private_key_id"),
-  "private_key": os.getenv("private_key"),
-  "client_email": os.getenv("client_email"),
-  "client_id": os.getenv("client_id"),
-  "auth_uri": os.getenv("auth_uri"),
-  "token_uri": os.getenv("token_uri"),
-  "auth_provider_x509_cert_url": os.getenv("auth_provider_x509_cert_url"),
-  "client_x509_cert_url": os.getenv("client_x509_cert_url")
-}
 
-# Use the credentials dictionary to initialize the Firebase Admin SDK.
+# --- Middleware ---
+origins = ["http://localhost:3000"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Firebase Admin SDK Initialization (Manual Method from .env) ---
 try:
-    cred = credentials.Certificate(firebase_credentials)
-    firebase_admin.initialize_app(cred)
-    print("✅ Firebase Admin SDK initialized successfully from environment variables!")
-except ValueError:
-    print("🔥 Firebase Admin SDK already initialized.")
+    if not firebase_admin._apps:
+        # Manually build the credentials dictionary from environment variables
+        firebase_credentials = {
+            "type": os.getenv("type"),
+            "project_id": os.getenv("project_id"),
+            "private_key_id": os.getenv("private_key_id"),
+            # This line is crucial: it correctly formats the private key
+            "private_key": os.getenv("private_key", "").replace('\\n', '\n'),
+            "client_email": os.getenv("client_email"),
+            "client_id": os.getenv("client_id"),
+            "auth_uri": os.getenv("auth_uri"),
+            "token_uri": os.getenv("token_uri"),
+            "auth_provider_x509_cert_url": os.getenv("auth_provider_x509_cert_url"),
+            "client_x509_cert_url": os.getenv("client_x509_cert_url"),
+        }
+        
+        # Check if essential credentials are provided to give a clear error
+        if not all([firebase_credentials["project_id"], firebase_credentials["private_key"], firebase_credentials["client_email"]]):
+            raise ValueError("Essential Firebase credential environment variables (project_id, private_key, client_email) are missing.")
+
+        cred = credentials.Certificate(firebase_credentials)
+        firebase_admin.initialize_app(cred)
+        print("✅ Firebase Admin SDK initialized successfully from .env variables!")
+except Exception as e:
+    print(f"🔥 Error initializing Firebase Admin SDK: {e}")
 
 
-uri=os.getenv("MONGO_URI")
-conn=MongoClient(uri)
-db=conn["CraftSathi"]
-coll=db["users"]
-
-class UserSchema(BaseModel):
-    email: str
+# --- Pydantic Models for Data Validation ---
+class UserRegisterSchema(BaseModel):
+    name: str
+    email: EmailStr
     password: str
 
-class UserResponse(BaseModel):
-    uid: str
-    email: str
+class UserLoginSchema(BaseModel):
+    email: EmailStr
+    password: str
 
-@app.get("/", response_class=HTMLResponse)
-async def check(request:Request):
-    firebase_client_config = {
-        "request": request,
-        "firebase_api_key": os.getenv("FIREBASE_API_KEY"),
-        "firebase_auth_domain": os.getenv("FIREBASE_AUTH_DOMAIN"),
-        "firebase_project_id": os.getenv("FIREBASE_PROJECT_ID"),
-        "firebase_storage_bucket": os.getenv("FIREBASE_STORAGE_BUCKET"),
-        "firebase_messaging_sender_id": os.getenv("FIREBASE_MESSAGING_SENDER_ID"),
-        "firebase_app_id": os.getenv("FIREBASE_APP_ID")
-    }
-    return templates.TemplateResponse("index.html", firebase_client_config)
+class TokenResponse(BaseModel):
+    token: str
 
-@app.post("/register", response_model=UserResponse, status_code=201)
-async def create_user(user: UserSchema):
-    """
-    Endpoint to register a new user in Firebase Authentication.
-    """
+
+# --- API Endpoints ---
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the CraftSathi API"}
+
+@app.post("/auth/register", response_model=TokenResponse, status_code=201)
+async def register_user(user_data: UserRegisterSchema):
     try:
         user_record = auth.create_user(
-            email=user.email,
-            password=user.password
+            email=user_data.email,
+            password=user_data.password,
+            display_name=user_data.name
         )
-        # Optional: Save user to your MongoDB collection
-        # coll.insert_one({"uid": user_record.uid, "email": user_record.email, "createdAt": user_record.user_metadata.creation_timestamp})
-        return {"uid": user_record.uid, "email": user_record.email}
+        custom_token = auth.create_custom_token(user_record.uid)
+        creds={"u_Id":user_record.uid,"u_name":user_data.name,"u_mail":user_data.email,"u_pwd":user_data.password}
+        user_col.insert_one(creds)
+        print("User registered")
+        return {"token": custom_token}
+
     except auth.EmailAlreadyExistsError:
-        raise HTTPException(status_code=400, detail="Email already exists")
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+@app.get("/auth")
+def sox():
+    print("Authentication pages is live")
+@app.post("/auth/login", response_model=TokenResponse)
+async def login_user(user_data: UserLoginSchema):
+    firebase_web_api_key = os.getenv("FIREBASE_API_KEY")
+    if not firebase_web_api_key:
+        raise HTTPException(status_code=500, detail="Firebase Web API Key is not configured.")
+        
+    rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_web_api_key}"
+    payload = {
+        "email": user_data.email,
+        "password": user_data.password,
+        "returnSecureToken": True
+    }
+    
+    try:
+        response = requests.post(rest_api_url, json=payload)
+        response.raise_for_status()
+        user_uid = response.json().get("localId")
+        if not user_uid:
+            raise HTTPException(status_code=500, detail="Failed to retrieve user ID.")
+        rel=user_col.find_one({"u_Id": user_uid})
+        print(rel['u_name'])
+        custom_token = auth.create_custom_token(user_uid)
+        return {"token": custom_token}
+    except requests.exceptions.HTTPError:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected server error: {str(e)}")
+
