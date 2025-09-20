@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Eye, EyeSlash } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { auth } from '../../api/firebase.js'; // This path is correct for the structure above
+import { useNavigate } from 'react-router-dom';
 import { signInWithCustomToken, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 // Simple inline SVG for the Google Logo
 const GoogleLogo = () => (
@@ -14,6 +15,7 @@ const GoogleLogo = () => (
 
 
 const AuthForm = () => {
+  const navigate = useNavigate();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -47,6 +49,7 @@ const AuthForm = () => {
       }
 
       await signInWithCustomToken(auth, data.token);
+      navigate('/'); 
 
     } catch (err) {
       setError(err.message);
@@ -148,7 +151,7 @@ const handleGoogleSignIn = async () => {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-10 text-gray-500"
           >
-            {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
         <button

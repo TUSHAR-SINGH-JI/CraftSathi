@@ -1,34 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect, createContext, useContext } from 'react';
+import { Routes, Route,Navigate } from 'react-router-dom';
 import { auth } from './api/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-
+import Generate from './components/layout/generate.jsx';
+import Photo from './components/layout/photo.jsx';
+import MyStuff from './components/layout/mystuff.jsx';
+// Your page components
 import WelcomePage from './pages/WelcomePage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
+import Navbar from './components/layout/Navbar.jsx';
 
-// A simple placeholder for your main dashboard after login
-const Dashboard = () => {
-  return (
-    <div className="p-8 text-center bg-brand-bg min-h-screen flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold text-brand-text font-display">
-        Welcome to your Dashboard!
-      </h1>
-      <p className="text-gray-600 mt-2">Main application content goes here. 🎨</p>
-      <button 
-        onClick={() => auth.signOut()}
-        className="mt-8 px-6 py-2 bg-brand-primary text-white font-semibold rounded-lg shadow-md hover:bg-brand-primary-hover transition-colors"
-      >
-        Sign Out
-      </button>
-    </div>
-  )
+// Create the Auth Context and Hook
+const AuthContext = createContext(null);
+
+export const useAuth = () => {
+  return useContext(AuthContext);
 };
 
-
+// Main App Component
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // This hook is at the top, called unconditionally
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -41,23 +35,30 @@ function App() {
     return <div className="flex items-center justify-center h-screen bg-brand-bg">Loading...</div>;
   }
 
-  return (
+return (
+  <AuthContext.Provider value={{ user }}>
+    <Navbar />
     <Routes>
       {/* Route 1: The Welcome Page at the root URL "/" */}
       <Route path="/" element={<WelcomePage />} />
 
       {/* Route 2: The Authentication Page at "/auth" */}
-      {/* If a user is already logged in, visiting this page will redirect them to their dashboard */}
-      <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+      {/* It should NOT redirect if the user is logged in, as this is the only way to log in. */}
+      <Route path="/auth" element={<AuthPage />} />
 
-      {/* Route 3: The Dashboard (Protected) at "/dashboard" */}
-      {/* If a user is NOT logged in, visiting this page will redirect them to the auth page */}
-      {/* <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} /> */}
+      {/* Route 3: The Generate Page (Protected) at "/generate" */}
+      {/* If the user is NOT logged in, they will be redirected to the auth page */}
+      <Route path="/generate" element={<Generate />} />
 
-      {/* This is a catch-all that redirects any other URL back to the welcome page */}
+
+      <Route path="/photo" element={<Photo />} />
+      <Route path="/mystuff" element={ <MyStuff />} />
+      {/* A catch-all that redirects any unknown URL to the welcome page */}
       <Route path="*" element={<Navigate to="/" />} />
+
     </Routes>
-  );
+  </AuthContext.Provider>
+);
 }
 
 export default App;
