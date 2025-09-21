@@ -4,6 +4,8 @@ import Navbar from '../components/layout/Navbar.jsx';
 // 2. Imported new icons for the notification
 import { Sparkles, Image, Globe, Users, Instagram, Youtube, CheckCircle2, XCircle } from 'lucide-react'; 
 import welcomeImg from '../assets/welcomepageimg.png';
+import Footer from '../components/layout/Footer.jsx';
+
 
 const WelcomePage = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -161,38 +163,9 @@ const WelcomePage = () => {
             </main>
 
             {/* Footer Section */}
-            <footer className="bg-white shadow-inner mt-auto pt-16 pb-8">
-                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
-                     {/* About Section */}
-                    <div className="md:col-span-1">
-                        <h3 className="text-2xl font-bold font-display text-brand-text mb-4">CraftSathi</h3>
-                        <p className="text-gray-600 mb-4">
-                            Empowering artisans with the magic of AI. We help you create, market, and grow your craft business by turning your art into compelling social media content.
-                        </p>
-                        <div className="flex space-x-4">
-                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-primary"><Instagram size={24} /></a>
-                            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-primary"><Youtube size={24} /></a>
-                        </div>
-                    </div>
-                    {/* Contact Form Section */}
-                    <div className="md:col-span-2">
-                        <h3 className="text-2xl font-bold font-display text-brand-text mb-4">Get in Touch</h3>
-                        {/* 7. Removed the old submission status paragraph from here */}
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Your Name" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-brand-primary focus:border-brand-primary" />
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Your Email" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-brand-primary focus:border-brand-primary" />
-                            </div>
-                            <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Your Query..." required rows="4" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-brand-primary focus:border-brand-primary resize-none"></textarea>
-                            <button type="submit" className="px-6 py-2 bg-brand-primary text-white font-semibold rounded-lg shadow-md hover:bg-brand-primary-hover transition-colors">Send Message</button>
-                        </form>
-                    </div>
-                </div>
-                <div className="text-center text-gray-500 mt-12 border-t border-gray-200 pt-6">
-                    <p>CraftSathi | 2025</p>
-                </div>
-            </footer>
-        </div>
+{/* --- NEW FOOTER DESIGN --- */}
+<Footer/>
+</div>
     );
 };
 

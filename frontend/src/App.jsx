@@ -9,7 +9,10 @@ import MyStuff from './components/layout/mystuff.jsx';
 import WelcomePage from './pages/WelcomePage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import Navbar from './components/layout/Navbar.jsx';
-// import NetworkPage from './components/layout/Network/NetworkPage.jsx'; // <-- Import the new page
+// import NetworkPage from './components/layout/Network/NetworkPage.jsx'; // 
+import AboutPage from './pages/about.jsx';
+
+
 
 // Create the Auth Context and Hook
 const AuthContext = createContext(null);
@@ -57,6 +60,8 @@ return (
       {/* <Route path="/network" element={<NetworkPage />} /> */}
 
       <Route path="/mystuff" element={ <MyStuff />} />
+
+      <Route path="/about" element={<AboutPage />} />
 
       {/* A catch-all that redirects any unknown URL to the welcome page */}
       <Route path="*" element={<Navigate to="/" />} />

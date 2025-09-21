@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ImagePlus, Loader2 } from 'lucide-react';
+import Footer from './Footer.jsx';
 
 const Generate = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -127,7 +128,9 @@ const Generate = () => {
           </div>
         </div>
       </div>
+
     </div>
+    
   );
 };
 
