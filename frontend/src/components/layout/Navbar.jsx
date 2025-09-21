@@ -35,6 +35,12 @@ const Navbar = () => {
           >
             Posts
           </Link>
+<Link 
+  to="/network" 
+  className="text-lg font-semibold text-gray-700 hover:text-brand-primary transition-colors"
+>
+  Network
+</Link>
           <Link 
             to="/mystuff" 
             className="text-lg font-semibold text-gray-700 hover:text-brand-primary transition-colors"
